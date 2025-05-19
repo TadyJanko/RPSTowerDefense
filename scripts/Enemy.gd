@@ -27,9 +27,34 @@ func set_visual_by_type():
 		print("ERROR: Sprite2D not found in Enemy node tree!")
 
 func _physics_process(delta):
-	velocity.x = speed
-	move_and_slide()
-	
+	var base_velocity = Vector2(speed, 0)
+	var attempted = [Vector2(0, 0), Vector2(0, -30), Vector2(0, 30)] # right, up, down
+	var moved = false
+	for offset in attempted:
+		var velocity = base_velocity + offset
+		var collision = move_and_collide(velocity * delta)
+		# No need to check for collision with towers here
+		if not collision:
+			moved = true
+			break
+
+	# Manual overlap check with towers
+	for tower in get_tree().get_nodes_in_group("towers"):
+		if global_position.distance_to(tower.global_position) < 32: # 32 pixels threshold, adjust as needed
+			# Subtract 50 points from score
+			get_tree().get_root().get_node("Main").add_score(-50)
+			# Show red floating text
+			var text = floating_text_scene.instantiate()
+			get_parent().add_child(text)
+			text.global_position = global_position
+			var label = text.get_node("Label")
+			label.text = "-50"
+			label.modulate = Color(1, 0, 0, 1) # Red
+			tower.queue_free()
+			queue_free()
+			return
+
+	# If all directions are blocked, enemy waits (does not move)
 	if position.x > 1536: # right edge for new resolution
 		get_parent().get_parent().lose_life()
 		queue_free()
@@ -50,5 +75,6 @@ func take_damage(amount, tower_type):
 		var text = floating_text_scene.instantiate()
 		get_parent().add_child(text)
 		text.global_position = global_position
-		get_parent().get_parent().add_money(20)
+		get_tree().get_root().get_node("Main").add_money(20)
+		get_tree().get_root().get_node("Main").add_score(10)
 		queue_free() 

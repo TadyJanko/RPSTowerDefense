@@ -14,6 +14,7 @@ var spawn_timer = 0
 var spawn_delay = 2.0  # seconds between spawns
 var money_timer = 0
 var money_delay = 1.0  # seconds between money increments
+var score = 0
 
 func _ready():
 	update_ui()
@@ -130,6 +131,7 @@ func update_tower_buttons():
 func update_ui():
 	$UI/LivesLabel.text = "Lives: " + str(lives)
 	$UI/MoneyLabel.text = "Money: " + str(money)
+	$UI/ScoreLabel.text = "Score: " + str(score)
 
 func lose_life():
 	lives -= 1
@@ -139,6 +141,10 @@ func lose_life():
 
 func add_money(amount):
 	money += amount
+	update_ui()
+
+func add_score(amount):
+	score += amount
 	update_ui()
 
 func spawn_enemy():
