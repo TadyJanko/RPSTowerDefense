@@ -1,0 +1,35 @@
+# Godot-specific files
+.godot/
+*.import
+*.translation
+*.translation.import
+*.tres
+*.tres.import
+*.tscn.import
+*.godot/
+*.godot.import
+
+# Build files
+export.cfg
+export_presets.cfg
+
+# Cache and temporary files
+*.tmp
+*.temp
+.cache/
+
+# Generated files
+*.uid
+*.uid.import
+
+# Editor-specific files
+.godot/editor_data/
+.godot/editor_settings.tres
+.godot/editor_settings.tres.import
+
+# Only track essential files
+!*.gd
+!*.tscn
+!*.png
+!*.svg
+!project.godot 

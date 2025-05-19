@@ -107,6 +107,9 @@ func _on_timer_timeout():
 			add_child(projectile)
 
 func show_range(visible: bool):
+	if tower_type == "money":
+		$RangeIndicator.visible = false
+		return
 	if has_node("RangeIndicator"):
 		$RangeIndicator.visible = visible
 
@@ -151,15 +154,18 @@ func update_level_label():
 
 func _process(delta):
 	if is_money_tower:
+		if get_tree().get_root().get_node("Main").game_over:
+			return
 		money_timer -= delta
+		var money_per_tick = int(pow(2, level)) # 2, 4, 8 for levels 1,2,3
 		if money_timer <= 0:
 			money_timer = money_delay
-			get_tree().get_root().get_node("Main").add_money(1)
+			get_tree().get_root().get_node("Main").add_money(money_per_tick)
 			var text = preload("res://scenes/FloatingText.tscn").instantiate()
 			get_parent().add_child(text)
 			text.global_position = global_position
 			var label = text.get_node("Label")
-			label.text = "+1"
+			label.text = "+" + str(money_per_tick)
 	elif tower_type == "slow":
 		var slow_percent = 0.125 * level
 		var enemies = get_tree().get_nodes_in_group("enemies")

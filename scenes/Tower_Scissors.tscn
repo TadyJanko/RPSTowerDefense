@@ -1,18 +1,16 @@
 [gd_scene load_steps=3 format=3 uid="uid://jjkn4eqor8v5"]
 
-[ext_resource type="Script" path="res://scripts/Tower.gd" id="1_2k4m3"]
-[ext_resource type="Script" path="res://scripts/RangeIndicator.gd" id="2_3k4m3"]
+[ext_resource type="Script" uid="uid://ce7h20ghpaks3" path="res://scripts/Tower.gd" id="1_2k4m3"]
+[ext_resource type="Script" uid="uid://dhpnthd7cj144" path="res://scripts/RangeIndicator.gd" id="2_3k4m3"]
 
 [node name="Tower_Scissors" type="Node2D" groups=["towers"]]
 script = ExtResource("1_2k4m3")
-tower_type = "scissors"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 1.0
 autostart = true
 
 [node name="RangeIndicator" type="Node2D" parent="."]
 visible = false
-script = ExtResource("2_3k4m3") 
+script = ExtResource("2_3k4m3")

@@ -7,24 +7,38 @@
 script = ExtResource("1_2u4vx")
 
 [node name="BG" type="Sprite2D" parent="."]
-position = Vector2(768, 511)
+position = Vector2(768, 512)
 texture = ExtResource("2_2u4vx")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="LivesLabel" type="Label" parent="UI"]
 offset_left = 20.0
-offset_top = 20.0
+offset_top = 49.0
 offset_right = 120.0
-offset_bottom = 46.0
+offset_bottom = 75.0
 text = "Lives: 10"
 
 [node name="MoneyLabel" type="Label" parent="UI"]
 offset_left = 20.0
-offset_top = 50.0
+offset_top = 77.0
 offset_right = 120.0
-offset_bottom = 76.0
+offset_bottom = 103.0
 text = "Money: 100"
+
+[node name="ScoreLabel" type="Label" parent="UI"]
+offset_left = 22.0
+offset_top = 104.0
+offset_right = 122.0
+offset_bottom = 130.0
+text = "Score: 0"
+
+[node name="ExitButton" type="Button" parent="UI"]
+offset_left = 1416.0
+offset_top = 20.0
+offset_right = 1496.0
+offset_bottom = 60.0
+text = "Exit"
 
 [node name="TowerButtons" type="HBoxContainer" parent="UI"]
 
@@ -43,3 +57,6 @@ text = "Scissors"
 [node name="EnemySpawner" type="Node2D" parent="."]
 
 [node name="TowerContainer" type="Node2D" parent="."]
+position = Vector2(20, 17)
+
+[node name="EnemyPath" type="Path2D" parent="."]

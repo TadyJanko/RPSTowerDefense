@@ -17,8 +17,8 @@ var spawn_delay = 2.0  # seconds between spawns
 var money_timer = 0
 var money_delay = 1.0  # seconds between money increments
 var score = 0
-var round_time = 45
-var round_timer = 45.0
+var round_time = 60
+var round_timer = 60.0
 var enemy_level = 1
 var max_health = 100
 var game_over = false
@@ -48,7 +48,7 @@ func _ready():
 	if not $UI.has_node("RoundTimerLabel"):
 		var round_label = Label.new()
 		round_label.name = "RoundTimerLabel"
-		round_label.text = "Time till next round: 45"
+		round_label.text = "Time till next round: 60"
 		round_label.position = Vector2(600, 10)
 		$UI.add_child(round_label)
 	update_round_timer_label()
