@@ -8,7 +8,9 @@ var selected_tower = null  # For tower selection
 var tower_scenes = {
 	"rock": preload("res://scenes/Tower_Rock.tscn"),
 	"paper": preload("res://scenes/Tower_Paper.tscn"),
-	"scissors": preload("res://scenes/Tower_Scissors.tscn")
+	"scissors": preload("res://scenes/Tower_Scissors.tscn"),
+	"slow": preload("res://scenes/Tower_Slow.tscn"),
+	"money": preload("res://scenes/Tower_Money.tscn")
 }
 var spawn_timer = 0
 var spawn_delay = 2.0  # seconds between spawns
@@ -27,7 +29,17 @@ func _ready():
 	$UI/TowerButtons/PaperButton.pressed.connect(_on_paper_button_pressed)
 	$UI/TowerButtons/ScissorsButton.pressed.connect(_on_scissors_button_pressed)
 	$UI/ExitButton.pressed.connect(_on_exit_button_pressed)
-	
+	# Dynamically create and connect Slow and Money buttons
+	var slow_button = Button.new()
+	slow_button.name = "SlowButton"
+	slow_button.text = "Slow"
+	slow_button.pressed.connect(_on_slow_button_pressed)
+	$UI/TowerButtons.add_child(slow_button)
+	var money_button = Button.new()
+	money_button.name = "MoneyButton"
+	money_button.text = "Money"
+	money_button.pressed.connect(_on_money_button_pressed)
+	$UI/TowerButtons.add_child(money_button)
 	# Connect tower selection signals
 	for tower in get_tree().get_nodes_in_group("towers"):
 		tower.tower_selected.connect(_on_tower_selected)
@@ -59,6 +71,10 @@ func _process(delta):
 			tower.show_range(true)
 		else:
 			tower.show_range(false)
+
+	# Always update upgrade/sell button state if a tower is selected
+	if selected_tower:
+		update_tower_buttons()
 
 	round_timer -= delta
 	if round_timer <= 0:
@@ -112,6 +128,12 @@ func _on_paper_button_pressed():
 
 func _on_scissors_button_pressed():
 	selected_tower_type = "scissors"
+
+func _on_slow_button_pressed():
+	selected_tower_type = "slow"
+
+func _on_money_button_pressed():
+	selected_tower_type = "money"
 
 func _on_tower_selected(tower):
 	selected_tower_type = null
@@ -246,6 +268,16 @@ func show_game_over():
 	restart_button.position = Vector2(668, 600)
 	restart_button.pressed.connect(_on_restart_button_pressed)
 	overlay.add_child(restart_button)
+	# End Game button
+	var end_button = Button.new()
+	end_button.text = "End Game"
+	end_button.size = Vector2(200, 60)
+	end_button.position = Vector2(668, 700)
+	end_button.pressed.connect(_on_end_button_pressed)
+	overlay.add_child(end_button)
 
 func _on_restart_button_pressed():
 	get_tree().reload_current_scene()
+
+func _on_end_button_pressed():
+	get_tree().quit()
