@@ -20,6 +20,7 @@ func _ready():
 	$UI/TowerButtons/RockButton.pressed.connect(_on_rock_button_pressed)
 	$UI/TowerButtons/PaperButton.pressed.connect(_on_paper_button_pressed)
 	$UI/TowerButtons/ScissorsButton.pressed.connect(_on_scissors_button_pressed)
+	$UI/ExitButton.pressed.connect(_on_exit_button_pressed)
 	
 	# Connect tower selection signals
 	for tower in get_tree().get_nodes_in_group("towers"):
@@ -56,6 +57,23 @@ func _unhandled_input(event):
 			tower_instance.tower_selected.connect(_on_tower_selected)
 			tower_instance.tower_deselected.connect(_on_tower_deselected)
 			selected_tower_type = null
+		else:
+			# Check if we clicked on a tower
+			var clicked_tower = null
+			for tower in get_tree().get_nodes_in_group("towers"):
+				if tower.is_point_inside(get_global_mouse_position()):
+					clicked_tower = tower
+					break
+			
+			# If we clicked on a tower, select it
+			if clicked_tower:
+				if selected_tower != clicked_tower:
+					if selected_tower:
+						selected_tower.deselect()
+					clicked_tower.select()
+			# If we clicked elsewhere, deselect current tower
+			elif selected_tower:
+				selected_tower.deselect()
 
 func _on_rock_button_pressed():
 	selected_tower_type = "rock"
@@ -69,13 +87,45 @@ func _on_scissors_button_pressed():
 func _on_tower_selected(tower):
 	selected_tower_type = null
 	selected_tower = tower
-	for t in get_tree().get_nodes_in_group("towers"):
-		if t != tower:
-			t.deselect()
+	show_tower_buttons(tower)
 
 func _on_tower_deselected(_tower):
 	selected_tower_type = null
 	selected_tower = null
+	hide_tower_buttons()
+
+func _on_upgrade_button_pressed():
+	if selected_tower and money >= selected_tower.upgrade_cost:
+		if selected_tower.upgrade():
+			money -= selected_tower.upgrade_cost
+			update_ui()
+			update_tower_buttons()
+
+func show_tower_buttons(tower):
+	if not has_node("UI/TowerButtons/UpgradeButton"):
+		var upgrade_button = Button.new()
+		upgrade_button.name = "UpgradeButton"
+		upgrade_button.text = "Upgrade"
+		upgrade_button.pressed.connect(_on_upgrade_button_pressed)
+		$UI/TowerButtons.add_child(upgrade_button)
+	
+	update_tower_buttons()
+
+func hide_tower_buttons():
+	if has_node("UI/TowerButtons/UpgradeButton"):
+		$UI/TowerButtons/UpgradeButton.visible = false
+
+func update_tower_buttons():
+	if selected_tower:
+		var upgrade_button = $UI/TowerButtons/UpgradeButton
+		upgrade_button.visible = true
+		
+		if selected_tower.level < 3:
+			upgrade_button.text = "Upgrade (" + str(selected_tower.upgrade_cost) + ")"
+			upgrade_button.disabled = money < selected_tower.upgrade_cost
+		else:
+			upgrade_button.text = "Max Level"
+			upgrade_button.disabled = true
 
 func update_ui():
 	$UI/LivesLabel.text = "Lives: " + str(lives)
@@ -96,5 +146,8 @@ func spawn_enemy():
 	var types = ["rock", "paper", "scissors"]
 	enemy.enemy_type = types[randi() % 3]
 	enemy.set_visual_by_type()
-	enemy.position = Vector2(-30, randf_range(450, 600))
+	enemy.position = Vector2(-30, randf_range(475, 540))  # Optimal spawn range
 	$EnemySpawner.add_child(enemy)
+
+func _on_exit_button_pressed():
+	get_tree().quit()
