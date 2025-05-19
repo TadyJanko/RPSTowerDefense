@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://dw1a2xeklatu2"]
+
+[ext_resource type="Script" uid="uid://ce7h20ghpaks3" path="res://scripts/Tower.gd" id="1_2k4m3"]
+[ext_resource type="Script" uid="uid://dhpnthd7cj144" path="res://scripts/RangeIndicator.gd" id="2_3k4m3"]
+
+[node name="Tower_Rock" type="Node2D" groups=["towers"]]
+script = ExtResource("1_2k4m3")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true
+
+[node name="RangeIndicator" type="Node2D" parent="."]
+visible = false
+script = ExtResource("2_3k4m3")
