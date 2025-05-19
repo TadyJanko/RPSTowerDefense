@@ -19,6 +19,7 @@ var round_time = 45
 var round_timer = 45.0
 var enemy_level = 1
 var max_health = 100
+var game_over = false
 
 func _ready():
 	update_ui()
@@ -68,6 +69,8 @@ func _process(delta):
 		update_round_timer_label()
 
 func _unhandled_input(event):
+	if game_over:
+		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if selected_tower_type:
 			# Place tower at mouse position
@@ -173,7 +176,7 @@ func lose_life():
 	lives -= 1
 	update_ui()
 	if lives <= 0:
-		get_tree().quit()
+		show_game_over()
 
 func add_money(amount):
 	money += amount
@@ -206,3 +209,43 @@ func _on_sell_button_pressed():
 		selected_tower = null
 		hide_tower_buttons()
 		update_ui()
+
+func show_game_over():
+	game_over = true
+	# Hide UI
+	$UI.visible = false
+	# Create overlay
+	var overlay = ColorRect.new()
+	overlay.name = "GameOverOverlay"
+	overlay.color = Color(0,0,0,0.95)
+	overlay.size = Vector2(1536, 1024)
+	overlay.position = Vector2(0,0)
+	add_child(overlay)
+	# Game Over label
+	var label = Label.new()
+	label.text = "Game Over"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 80)
+	label.size = Vector2(1536, 200)
+	label.position = Vector2(0, 300)
+	overlay.add_child(label)
+	# Score label
+	var score_label = Label.new()
+	score_label.text = "Score: " + str(score)
+	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	score_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	score_label.add_theme_font_size_override("font_size", 40)
+	score_label.size = Vector2(1536, 100)
+	score_label.position = Vector2(0, 450)
+	overlay.add_child(score_label)
+	# Restart button
+	var restart_button = Button.new()
+	restart_button.text = "Restart"
+	restart_button.size = Vector2(200, 60)
+	restart_button.position = Vector2(668, 600)
+	restart_button.pressed.connect(_on_restart_button_pressed)
+	overlay.add_child(restart_button)
+
+func _on_restart_button_pressed():
+	get_tree().reload_current_scene()
