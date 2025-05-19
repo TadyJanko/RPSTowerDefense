@@ -1,16 +1,27 @@
 extends CharacterBody2D
 
 var speed = 67  # Reduced from 200 to make it 3x slower
+var base_speed = 67
 var health = 100
 var max_health = 100
 var floating_text_scene = preload("res://scenes/FloatingText.tscn")
 var enemy_type = "rock" # default, set when spawning
+var enemy_level = 1
 
 func _ready():
 	add_to_group("enemies")
+	base_speed = speed
 	$HealthBar.max_value = max_health
 	$HealthBar.value = health
 	set_visual_by_type()
+	if not has_node("LevelLabel"):
+		var label = Label.new()
+		label.name = "LevelLabel"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		add_child(label)
+	$LevelLabel.text = "Lvl " + str(enemy_level)
+	$LevelLabel.position = Vector2(-10, 35)
+	set_level(enemy_level)
 
 func set_visual_by_type():
 	var sprite = find_child("Sprite2D", true, false)
@@ -75,6 +86,18 @@ func take_damage(amount, tower_type):
 		var text = floating_text_scene.instantiate()
 		get_parent().add_child(text)
 		text.global_position = global_position
-		get_tree().get_root().get_node("Main").add_money(20)
+		var label = text.get_node("Label")
+		label.text = "+10"
+		get_tree().get_root().get_node("Main").add_money(10)
 		get_tree().get_root().get_node("Main").add_score(10)
 		queue_free() 
+
+func set_level(lvl):
+	enemy_level = lvl
+	max_health = 100 * pow(2, enemy_level-1)
+	health = max_health
+	speed = 67 * pow(1.2, enemy_level-1)
+	$HealthBar.max_value = max_health
+	$HealthBar.value = health
+	if has_node("LevelLabel"):
+		$LevelLabel.text = "Lvl " + str(enemy_level)
