@@ -15,6 +15,10 @@ var spawn_delay = 2.0  # seconds between spawns
 var money_timer = 0
 var money_delay = 1.0  # seconds between money increments
 var score = 0
+var round_time = 30
+var round_timer = 30.0
+var enemy_level = 1
+var max_health = 100
 
 func _ready():
 	update_ui()
@@ -27,6 +31,14 @@ func _ready():
 	for tower in get_tree().get_nodes_in_group("towers"):
 		tower.tower_selected.connect(_on_tower_selected)
 		tower.tower_deselected.connect(_on_tower_deselected)
+
+	if not $UI.has_node("RoundTimerLabel"):
+		var round_label = Label.new()
+		round_label.name = "RoundTimerLabel"
+		round_label.text = "Time till next round: 30"
+		round_label.position = Vector2(600, 10)
+		$UI.add_child(round_label)
+	update_round_timer_label()
 
 func _process(delta):
 	spawn_timer -= delta
@@ -46,6 +58,14 @@ func _process(delta):
 			tower.show_range(true)
 		else:
 			tower.show_range(false)
+
+	round_timer -= delta
+	if round_timer <= 0:
+		round_timer = round_time
+		enemy_level += 1
+		update_round_timer_label()
+	else:
+		update_round_timer_label()
 
 func _unhandled_input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -152,8 +172,13 @@ func spawn_enemy():
 	var types = ["rock", "paper", "scissors"]
 	enemy.enemy_type = types[randi() % 3]
 	enemy.set_visual_by_type()
-	enemy.position = Vector2(-30, randf_range(475, 540))  # Optimal spawn range
+	enemy.position = Vector2(-30, randf_range(475, 540))
+	enemy.enemy_level = enemy_level  # Pass level
+	enemy.set_level(enemy_level)  # Call set_level if exists
 	$EnemySpawner.add_child(enemy)
 
 func _on_exit_button_pressed():
 	get_tree().quit()
+
+func update_round_timer_label():
+	$UI/RoundTimerLabel.text = "Time till next round: " + str(int(round_timer))
