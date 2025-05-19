@@ -15,8 +15,8 @@ var spawn_delay = 2.0  # seconds between spawns
 var money_timer = 0
 var money_delay = 1.0  # seconds between money increments
 var score = 0
-var round_time = 30
-var round_timer = 30.0
+var round_time = 45
+var round_timer = 45.0
 var enemy_level = 1
 var max_health = 100
 
@@ -35,7 +35,7 @@ func _ready():
 	if not $UI.has_node("RoundTimerLabel"):
 		var round_label = Label.new()
 		round_label.name = "RoundTimerLabel"
-		round_label.text = "Time till next round: 30"
+		round_label.text = "Time till next round: 45"
 		round_label.position = Vector2(600, 10)
 		$UI.add_child(round_label)
 	update_round_timer_label()
@@ -48,7 +48,7 @@ func _process(delta):
 	
 	money_timer -= delta
 	if money_timer <= 0:
-		money += 10
+		money += 1
 		update_ui()
 		money_timer = money_delay
 
@@ -71,6 +71,11 @@ func _unhandled_input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if selected_tower_type:
 			# Place tower at mouse position
+			var tower_cost = 100
+			if money < tower_cost:
+				selected_tower_type = null
+				return
+			money -= tower_cost
 			var tower_instance = tower_scenes[selected_tower_type].instantiate()
 			tower_instance.position = get_global_mouse_position()
 			tower_instance.set_tower_type(selected_tower_type)  # Set the tower type
@@ -78,6 +83,7 @@ func _unhandled_input(event):
 			tower_instance.tower_selected.connect(_on_tower_selected)
 			tower_instance.tower_deselected.connect(_on_tower_deselected)
 			selected_tower_type = null
+			update_ui()
 		else:
 			# Check if we clicked on a tower
 			var clicked_tower = null
@@ -85,7 +91,6 @@ func _unhandled_input(event):
 				if tower.is_point_inside(get_global_mouse_position()):
 					clicked_tower = tower
 					break
-			
 			# If we clicked on a tower, select it
 			if clicked_tower:
 				if selected_tower != clicked_tower:
@@ -119,6 +124,8 @@ func _on_upgrade_button_pressed():
 	if selected_tower and money >= selected_tower.upgrade_cost:
 		if selected_tower.upgrade():
 			money -= selected_tower.upgrade_cost
+			if money < 0:
+				money = 0
 			update_ui()
 			update_tower_buttons()
 
@@ -129,24 +136,33 @@ func show_tower_buttons(tower):
 		upgrade_button.text = "Upgrade"
 		upgrade_button.pressed.connect(_on_upgrade_button_pressed)
 		$UI/TowerButtons.add_child(upgrade_button)
-	
+	if not has_node("UI/TowerButtons/SellButton"):
+		var sell_button = Button.new()
+		sell_button.name = "SellButton"
+		sell_button.text = "Sell"
+		sell_button.pressed.connect(_on_sell_button_pressed)
+		$UI/TowerButtons.add_child(sell_button)
 	update_tower_buttons()
 
 func hide_tower_buttons():
 	if has_node("UI/TowerButtons/UpgradeButton"):
 		$UI/TowerButtons/UpgradeButton.visible = false
+	if has_node("UI/TowerButtons/SellButton"):
+		$UI/TowerButtons/SellButton.visible = false
 
 func update_tower_buttons():
 	if selected_tower:
 		var upgrade_button = $UI/TowerButtons/UpgradeButton
+		var sell_button = $UI/TowerButtons/SellButton
 		upgrade_button.visible = true
-		
+		sell_button.visible = true
 		if selected_tower.level < 3:
 			upgrade_button.text = "Upgrade (" + str(selected_tower.upgrade_cost) + ")"
 			upgrade_button.disabled = money < selected_tower.upgrade_cost
 		else:
 			upgrade_button.text = "Max Level"
 			upgrade_button.disabled = true
+		sell_button.text = "Sell (" + str(selected_tower.get_sell_value()) + ")"
 
 func update_ui():
 	$UI/LivesLabel.text = "Lives: " + str(lives)
@@ -182,3 +198,11 @@ func _on_exit_button_pressed():
 
 func update_round_timer_label():
 	$UI/RoundTimerLabel.text = "Time till next round: " + str(int(round_timer))
+
+func _on_sell_button_pressed():
+	if selected_tower:
+		money += selected_tower.get_sell_value()
+		selected_tower.queue_free()
+		selected_tower = null
+		hide_tower_buttons()
+		update_ui()
